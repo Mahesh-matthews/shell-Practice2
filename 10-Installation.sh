@@ -15,3 +15,20 @@ if [ $USERID -ne 0 ]; then
     else
         echo "Installing Nginx ... Success"
     fi
+    echo "Installing MySQL database"
+    dnf install mysql -y 
+     if [ $? -ne 0 ]; then
+        echo "Installing MySQL ... Failure"
+        exit 1
+    else
+        echo "Installing MySQL ... Success"
+    fi
+    
+    echo "Installing Node.js"
+    dnf install nodejs -y 
+     if [ $? -ne 0 ]; then
+        echo "Installing Node.js ... Failure"
+        exit 1
+    else
+        echo "Installing Node.js ... Success"
+    fi
