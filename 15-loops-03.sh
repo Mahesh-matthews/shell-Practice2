@@ -27,11 +27,9 @@ if [ $USERID -ne 0 ]; then
     dnf list installed $package &>> $LOGS_FILE
     if [ $? -ne 0 ]; then
         echo "$package is not installed. Installing $package" | tee -a $LOGS_FILE
+        dnf install $package -y &>> $LOGS_FILE
+        validate $? "Installing $package"
     else
         echo "$package is already installed. Skipping $package" | tee -a $LOGS_FILE
     fi
-    
-    dnf install $package -y &>> $LOGS_FILE
-    validate $? "Installing $package"
-   
-   done
+    done
