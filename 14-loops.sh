@@ -22,12 +22,9 @@ if [ $USERID -ne 0 ]; then
 
    }
 
-   
-    dnf install nginx -y &>> $LOGS_FILE
-    validate $? "Installing Nginx"
-  
-    dnf install mysql -y &>> $LOGS_FILE
-    validate $? "Installing MySQL"
+   for package in $@ #sudo sh 14-loops.sh nginx mysql nodejs
+   do 
 
-    dnf install nodejs -y &>> $LOGS_FILE
-    validate $? "Installing Node.js"
+    dnf install $package -y &>> $LOGS_FILE
+    validate $? "Installing $package"
+   done
