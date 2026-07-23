@@ -17,7 +17,7 @@ elif [ $num2 -gt $num1 ] && [ $num2 -gt $num3 ]; then
 else
     echo "$num3 is the largest number."
 fi 
-
+COMMENT
 
 NUM=$1
 if [ $NUM -gt 20 ]; then
@@ -27,21 +27,4 @@ elif [ $NUM -eq 20 ]; then
 else
     echo "given number is less than 20."
 fi   
-COMMENT
 
-USERID=$(id -u)
-if [ $USERID -ne 0 ]; then
-    echo "You are not running as root."
-    exit 1
- fi  
-
-
-    echo "Installing Nginx web server"
-    dnf install nginxfgfg -y 
-
-    if [ $? -ne 0 ]; then
-        echo "Installing Nginx ... Failure"
-        exit 1
-    else
-        echo "Installing Nginx ... Success"
-    fi
