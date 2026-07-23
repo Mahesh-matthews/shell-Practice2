@@ -1,4 +1,6 @@
 #!/bin/bash
+
+# Logs and redirecting output to log file
 USERID=$(id -u)
 LOGS_FOLDER="/var/log/shell-scripting"
 LOGS_FILE="/var/log/shell-scripting/$0.log"
