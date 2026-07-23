@@ -33,5 +33,5 @@ USERID=$(id -u)
 if [ $USERID -ne 0 ]; then
     echo "You are not running as root."
  fi   
-    Echo "Installing Nginx web server"
+    echo "Installing Nginx web server"
     dnf install -y nginx
