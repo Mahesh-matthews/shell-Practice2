@@ -1,0 +1,93 @@
+#!/bin/bash
+
+USERID=$(id -u)
+LOGS_FOLDER="/var/log/shell-reboshop"
+LOGS_FILE="$LOGS_FOLDER/$0.log"
+R="\e[31m"
+G="\e[32m"
+Y="\e[33m"
+B="\e[34m"
+N="\e[0m"
+SCRIPT_DIR=$PWD
+MONGOB_HOST=mongodb.mytechnet.online
+
+
+
+if [ $USERID -ne 0 ]; then
+    echo -e "$R You are not running as root.$N" | tee -a $LOGS_FILE
+    exit 1
+ fi  
+
+ mkdir -p $LOGS_FOLDER
+
+   validate(){
+
+    if [ $1 -ne 0 ]; then
+        echo -e "$R $2 ... Failure$N" | tee -a $LOGS_FILE
+        exit 1
+    else
+        echo -e "$G $2 ... Success$N" | tee -a $LOGS_FILE
+    fi
+   }
+
+dnf module disable nodejs -y &>> $LOGS_FILE
+validate $? "Disabling nodejs module"
+
+dnf module enable nodejs:20 -y &>> $LOGS_FILE
+validate $? "Enabling nodejs module"
+
+dnf install nodejs -y &>> $LOGS_FILE
+validate $? "Installing nodejs" 
+
+id roboshop &>>$LOGS_FILE
+if [ $? -ne 0 ]; then
+    useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>> $LOGS_FILE
+    validate $? "Adding roboshop user"
+ else
+    echo -e "$B roboshop user is already present. $Y Skipping roboshop user creation$N"
+ fi
+
+mkdir -p /app &>> $LOGS_FILE
+validate $? "Creating /app directory"
+
+curl -o /tmp/catalogue.zip https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip &>> $LOGS_FILE
+validate $? "Downloading catalogue code"
+
+cd /app 
+validate $? "Changing directory to /app"
+
+rm -rf /app/* &>> $LOGS_FILE
+validate $? "Cleaning /app directory"
+
+unzip /tmp/catalogue.zip &>> $LOGS_FILE
+validate $? "Extracting catalogue code"
+
+npm install &>> $LOGS_FILE
+validate $? "Installing nodejs dependencies"
+
+cp $SCRIPT_DIR/catalogue.service /etc/systemd/system/catalogue.service &>> $LOGS_FILE
+validate $? "Created systemctl service"
+
+systemctl daemon-reload
+systemctl enable catalogue &>> $LOGS_FILE
+systemctl start catalogue
+validate $? "Starting and enabling catalogue service"
+
+cp $SCRIPT_DIR/mongo.repo /etc/yum.repos.d/mongo.repo &>> $LOGS_FILE
+dnf install mongodb-mongosh -y &>> $LOGS_FILE
+validate $? "Installing mongodb client"
+
+INDEX=$(mongosh --host $MONGODB_HOST --quiet --eval  'db.getMongo().getDBNames().indexof("catalogue")')
+
+if [ $INDEX -le 0 ]; then
+       mongosh --host $MONGODB_HOST </app/db/master-data.js &>> $LOGS_FILE
+    validate $? "Loading Products"
+ else
+    echo -e "$B Products already loaded. $Y Skipping catalogue database import $N"
+ fi
+
+systemctl restart catalogue &>> $LOGS_FILE
+validate $? "Restarting catalogue service"
+
+
+
